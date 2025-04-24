@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -13,8 +13,15 @@ const TwoFactorAuth = () => {
   const [code, setCode] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const { verifyTwoFactor, logout } = useAuth();
+  const { verifyTwoFactor, logout, pendingTwoFactor } = useAuth();
   const navigate = useNavigate();
+
+  // Перенаправление, если нет ожидающей 2FA
+  useEffect(() => {
+    if (!pendingTwoFactor) {
+      navigate("/login");
+    }
+  }, [pendingTwoFactor, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -80,6 +87,7 @@ const TwoFactorAuth = () => {
                 onChange={(e) => setCode(e.target.value)}
                 disabled={isLoading}
                 className="text-center text-lg tracking-widest"
+                autoFocus
               />
             </div>
             

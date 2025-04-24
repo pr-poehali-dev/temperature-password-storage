@@ -27,6 +27,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 const USERS_STORAGE_KEY = "weather_app_users";
 const AUTH_TOKEN_KEY = "weather_app_auth_token";
 const PENDING_2FA_KEY = "weather_app_pending_2fa";
+const TWO_FACTOR_CODE_KEY = "weather_app_2fa_code";
 
 // Имитация отправки уведомления в Telegram
 const sendTelegramNotification = async (telegramId: string, message: string, code?: string): Promise<boolean> => {
@@ -50,7 +51,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [pendingTwoFactor, setPendingTwoFactor] = useState(false);
   const [pendingUser, setPendingUser] = useState<any>(null);
-  const [twoFactorCode, setTwoFactorCode] = useState<string | null>(null);
 
   // Load users from local storage or initialize empty array
   const getUsers = (): { 
@@ -115,8 +115,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       
       // If 2FA is enabled, don't log in immediately
       if (foundUser.twoFactorEnabled) {
+        // Генерируем код и сохраняем его в localStorage
         const code = generateTwoFactorCode();
-        setTwoFactorCode(code);
+        localStorage.setItem(TWO_FACTOR_CODE_KEY, code);
+        
         setPendingUser(userWithoutPassword);
         setPendingTwoFactor(true);
         
@@ -135,6 +137,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           );
         }
         
+        console.log("2FA code generated:", code); // Для отладки
         return true;
       }
       
@@ -150,16 +153,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const verifyTwoFactor = async (code: string): Promise<boolean> => {
-    // In a real app, you would validate the code against a stored value or via API
-    if (code === twoFactorCode && pendingUser) {
+    // Получаем сохраненный код из localStorage
+    const savedCode = localStorage.getItem(TWO_FACTOR_CODE_KEY);
+    
+    console.log("Verifying 2FA:", { entered: code, saved: savedCode, pendingUser }); // Для отладки
+    
+    if (code === savedCode && pendingUser) {
       setUser(pendingUser);
       setIsAuthenticated(true);
       setPendingTwoFactor(false);
       setPendingUser(null);
-      setTwoFactorCode(null);
       
       localStorage.setItem(AUTH_TOKEN_KEY, JSON.stringify(pendingUser));
       localStorage.removeItem(PENDING_2FA_KEY);
+      localStorage.removeItem(TWO_FACTOR_CODE_KEY);
       
       return true;
     }
@@ -250,9 +257,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setIsAuthenticated(false);
     setPendingTwoFactor(false);
     setPendingUser(null);
-    setTwoFactorCode(null);
     localStorage.removeItem(AUTH_TOKEN_KEY);
     localStorage.removeItem(PENDING_2FA_KEY);
+    localStorage.removeItem(TWO_FACTOR_CODE_KEY);
   };
 
   return (
