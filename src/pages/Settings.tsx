@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import Header from "@/components/Header";
@@ -14,15 +14,26 @@ import { Separator } from "@/components/ui/separator";
 
 const Settings = () => {
   const { user, enableTwoFactor, updateTelegramId } = useAuth();
-  const [telegramId, setTelegramId] = useState(user?.telegramId || "");
-  const [twoFactorEnabled, setTwoFactorEnabled] = useState(user?.twoFactorEnabled || false);
+  const [telegramId, setTelegramId] = useState("");
+  const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
+  useEffect(() => {
+    // Перенес редирект в useEffect
+    if (!user) {
+      navigate("/login");
+    } else {
+      // Инициализация состояния после того, как получили пользователя
+      setTelegramId(user.telegramId || "");
+      setTwoFactorEnabled(user.twoFactorEnabled || false);
+    }
+  }, [user, navigate]);
+
+  // Если нет пользователя, не рендерим содержимое
   if (!user) {
-    navigate("/login");
     return null;
   }
 
