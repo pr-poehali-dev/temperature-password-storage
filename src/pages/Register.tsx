@@ -14,6 +14,7 @@ const Register = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [telegramId, setTelegramId] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const { register } = useAuth();
@@ -22,9 +23,9 @@ const Register = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Валидация
+    // Валидация формы
     if (!username || !email || !password || !confirmPassword) {
-      setError("Пожалуйста, заполните все поля");
+      setError("Пожалуйста, заполните все обязательные поля");
       return;
     }
     
@@ -34,7 +35,7 @@ const Register = () => {
     }
     
     if (password.length < 6) {
-      setError("Пароль должен содержать не менее 6 символов");
+      setError("Пароль должен содержать минимум 6 символов");
       return;
     }
     
@@ -42,7 +43,7 @@ const Register = () => {
     setError("");
     
     try {
-      const success = await register(username, email, password);
+      const success = await register(username, email, password, telegramId || undefined);
       
       if (success) {
         navigate("/");
@@ -63,7 +64,7 @@ const Register = () => {
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl font-bold text-center">Регистрация</CardTitle>
           <CardDescription className="text-center">
-            Создайте аккаунт для доступа к полной функциональности
+            Создайте новый аккаунт для использования сервиса
           </CardDescription>
         </CardHeader>
         
@@ -77,10 +78,10 @@ const Register = () => {
           
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="username">Имя пользователя</Label>
+              <Label htmlFor="username">Имя пользователя *</Label>
               <Input
                 id="username"
-                placeholder="Иван"
+                placeholder="Ivan"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 disabled={isLoading}
@@ -88,7 +89,7 @@ const Register = () => {
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">Email *</Label>
               <Input
                 id="email"
                 type="email"
@@ -100,7 +101,7 @@ const Register = () => {
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="password">Пароль</Label>
+              <Label htmlFor="password">Пароль *</Label>
               <Input
                 id="password"
                 type="password"
@@ -112,9 +113,9 @@ const Register = () => {
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Подтвердите пароль</Label>
+              <Label htmlFor="confirm-password">Подтверждение пароля *</Label>
               <Input
-                id="confirmPassword"
+                id="confirm-password"
                 type="password"
                 placeholder="••••••••"
                 value={confirmPassword}
@@ -123,8 +124,24 @@ const Register = () => {
               />
             </div>
             
+            <div className="space-y-2">
+              <Label htmlFor="telegram-id">
+                Telegram ID <span className="text-sm text-muted-foreground">(необязательно)</span>
+              </Label>
+              <Input
+                id="telegram-id"
+                placeholder="123456789"
+                value={telegramId}
+                onChange={(e) => setTelegramId(e.target.value)}
+                disabled={isLoading}
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                Для получения Telegram ID напишите боту @userinfobot
+              </p>
+            </div>
+            
             <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? "Загрузка..." : "Зарегистрироваться"}
+              {isLoading ? "Регистрация..." : "Зарегистрироваться"}
             </Button>
           </form>
         </CardContent>

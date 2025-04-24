@@ -2,7 +2,7 @@
 import { useAuth } from "@/context/AuthContext";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { UserCircle, LogOut } from "lucide-react";
+import { UserCircle, LogOut, Settings } from "lucide-react";
 
 const Header = () => {
   const { isAuthenticated, user, logout } = useAuth();
@@ -21,6 +21,18 @@ const Header = () => {
                 <UserCircle className="h-5 w-5" />
                 {user?.username}
               </span>
+              
+              <Link to="/settings">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="bg-primary-foreground/10 text-primary-foreground hover:bg-primary-foreground/20 flex items-center gap-1"
+                >
+                  <Settings className="h-4 w-4" />
+                  Настройки
+                </Button>
+              </Link>
+              
               <Button 
                 variant="secondary" 
                 size="sm" 

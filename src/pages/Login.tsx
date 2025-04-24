@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -14,8 +14,16 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const { login } = useAuth();
+  const { login, isAuthenticated, pendingTwoFactor } = useAuth();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate("/");
+    } else if (pendingTwoFactor) {
+      navigate("/2fa");
+    }
+  }, [isAuthenticated, pendingTwoFactor, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,7 +41,8 @@ const Login = () => {
       const success = await login(email, password);
       
       if (success) {
-        navigate("/");
+        // Если требуется 2FA, будет перенаправлено через useEffect
+        // Если авторизация прошла без 2FA, будет перенаправлено на главную страницу через useEffect
       } else {
         setError("Неверный email или пароль");
       }
